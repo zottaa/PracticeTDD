@@ -6,7 +6,7 @@ interface MyStack<Type> {
 
     fun pop(): Type
 
-    abstract class Abstract<Type>(private val maxCount: Int) : MyStack<Type> {
+    abstract class Abstract<Type>(maxCount: Int) : MyStack<Type> {
 
         init {
             if (maxCount < 1) {
@@ -42,7 +42,7 @@ interface MyStack<Type> {
                 throw IllegalStateException()
             }
 
-            size -= 1
+            size--
 
             val item = stack[size]
 
@@ -62,8 +62,7 @@ interface MyStack<Type> {
                 stack[i + 1] = stack[i]
             }
 
-            stack[size] = item as Any
-            size += 1
+            stack[size++] = item as Any
         }
 
         override fun pop(): Type {
@@ -71,11 +70,9 @@ interface MyStack<Type> {
                 throw IllegalStateException()
             }
 
-            size -= 1
+            size--
 
             val item = stack[size]
-
-            stack[size] = null
 
             return item as Type
         }
