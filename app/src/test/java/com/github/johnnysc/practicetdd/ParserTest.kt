@@ -75,6 +75,15 @@ class ParserTest {
     }
 
     @Test
+    fun `test float2`() {
+        val parser = Parser.Base(delimiter = "\n")
+        val actual = parser.parse(raw = "12.55")
+        val double: Float = 12.55f
+        val expected = listOf<Any>(double)
+        assertEquals(expected, actual)
+    }
+
+    @Test
     fun `test double`() {
         val parser = Parser.Base(delimiter = "\n")
         val actual = parser.parse(raw = "540282346638528860000000000000000000000")
@@ -123,7 +132,7 @@ class ParserTest {
     fun `test complex`() {
         val parser = Parser.Base(delimiter = "\n")
         val actual =
-            parser.parse(raw = "false\nd\n-121\n-32123\n-2123123123\n32123123123\n132123123123.1\n51234923432123123123.55\nblah blah blah")
+            parser.parse(raw = "false\nd\n-121\n-32123\n-2123123123\n32123123123\n132123123123.1\n5123492343212312312300000000000000000000.55\nblah blah blah")
         val first: Boolean = false
         val second: Char = 'd'
         val third: Byte = -121
@@ -131,7 +140,7 @@ class ParserTest {
         val fifth: Int = -2123123123
         val sixth: Long = 32123123123
         val seventh: Float = 132123123123.1f
-        val eighth: Double = 51234923432123123123.55
+        val eighth: Double = 5123492343212312312300000000000000000000.55
         val ninth = "blah blah blah"
         val expected =
             listOf<Any>(first, second, third, forth, fifth, sixth, seventh, eighth, ninth)
@@ -142,7 +151,7 @@ class ParserTest {
     fun `test different delimiter`() {
         val parser = Parser.Base(delimiter = ";")
         val actual =
-            parser.parse(raw = "false;d;-121;-32123;-2123123123;32123123123;132123123123.1f;51234923432123123123.55;blah blah blah")
+            parser.parse(raw = "false;d;-121;-32123;-2123123123;32123123123;132123123123.1f;5123492343212312312300000000000000000000.55;blah blah blah")
         val first: Boolean = false
         val second: Char = 'd'
         val third: Byte = -121
@@ -150,7 +159,7 @@ class ParserTest {
         val fifth: Int = -2123123123
         val sixth: Long = 32123123123
         val seventh: Float = 132123123123.1f
-        val eighth: Double = 51234923432123123123.55
+        val eighth: Double = 5123492343212312312300000000000000000000.55
         val ninth = "blah blah blah"
         val expected =
             listOf<Any>(first, second, third, forth, fifth, sixth, seventh, eighth, ninth)
