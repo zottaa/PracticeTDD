@@ -1,7 +1,5 @@
 package com.github.johnnysc.practicetdd
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 
 interface CacheDataSource {
 
