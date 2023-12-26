@@ -24,8 +24,8 @@ interface CacheDataSource {
 
             val currentTime = now.now()
 
-            data.values.removeIf { time ->
-                (lifeTimeMillis < (currentTime - time))
+            data.values.removeIf { addTime ->
+                (lifeTimeMillis < (currentTime - addTime))
             }
 
             return data.keys.toList()
