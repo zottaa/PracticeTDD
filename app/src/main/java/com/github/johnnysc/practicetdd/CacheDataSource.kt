@@ -20,7 +20,6 @@ interface CacheDataSource {
             data[item] = now.now()
         }
 
-        @RequiresApi(Build.VERSION_CODES.N)
         override fun data(): List<SimpleData> {
 
             val currentTime = now.now()
