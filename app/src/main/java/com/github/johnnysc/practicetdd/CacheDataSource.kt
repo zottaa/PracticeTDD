@@ -1,5 +1,8 @@
 package com.github.johnnysc.practicetdd
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+
 interface CacheDataSource {
 
     fun add(item: SimpleData)
@@ -17,24 +20,16 @@ interface CacheDataSource {
             data[item] = now.now()
         }
 
+        @RequiresApi(Build.VERSION_CODES.N)
         override fun data(): List<SimpleData> {
 
-            val list = mutableListOf<SimpleData>()
-            val removeList = mutableListOf<SimpleData>()
+            val currentTime = now.now()
 
-            data.forEach { (item, time) ->
-                if (lifeTimeMillis < (now.now() - time)) {
-                    removeList.add(item)
-                } else {
-                    list.add(item)
-                }
+            data.values.removeIf { time ->
+                (lifeTimeMillis < (currentTime - time))
             }
 
-            removeList.forEach {
-                data.remove(it)
-            }
-
-            return list
+            return data.keys.toList()
         }
 
     }
