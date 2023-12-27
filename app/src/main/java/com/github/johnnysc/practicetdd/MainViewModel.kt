@@ -1,37 +1,31 @@
 package com.github.johnnysc.practicetdd
 
+import androidx.lifecycle.ViewModel
+
 class MainViewModel(
     private val filters: List<GoodFilter>,
     private val products: List<Good>,
     private val communication: Communication<List<Good>>,
     private val filtersCommunication: Communication<List<GoodFilter>>
-) {
+) : ViewModel(), Change {
 
-    private val currentFilters: MutableList<GoodFilter> = mutableListOf()
-
-    fun change(filter: GoodFilter) {
-
-        if (currentFilters.contains(filter)) {
-            currentFilters.remove(filter)
-        } else {
-            currentFilters.add(filter)
-        }
-
-
-        val unsuitableGoods = mutableListOf<Good>()
-
-        currentFilters.forEach { currentFilter ->
-            products.forEach { product ->
-                if (!product.map(currentFilter)) {
-                    unsuitableGoods.add(product)
-                }
-            }
-        }
-
-        val communicationList = products.toMutableList()
-        communicationList.removeAll(unsuitableGoods)
-
-        communication.map(communicationList)
-        filtersCommunication.map(currentFilters)
+    init {
+        communication.map(products)
+        filtersCommunication.map(filters)
     }
+
+
+    override fun change(filter: GoodFilter) {
+        filters.find { it == filter }?.change(filter)
+        filtersCommunication.map(filters)
+        products.filter { product ->
+            product.map(Good.Base(filters.filter { it.isChosen() }))
+        }.let {
+            communication.map(it)
+        }
+    }
+}
+
+interface Change {
+    fun change(filter: GoodFilter)
 }
