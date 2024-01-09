@@ -1,8 +1,6 @@
 package com.github.johnnysc.practicetdd
 
 import com.google.gson.Gson
-import org.json.JSONObject
-import retrofit2.Response
 
 interface CloudDataSource {
 
