@@ -71,4 +71,42 @@ interface GoodCodeRule {
 
 
     }
+
+    class Functions : GoodCodeRule {
+        override fun isValid(text: String): Boolean {
+            val lines = text.lines()
+
+            if (lines.count {
+                    it.contains("fun")
+                } > 5) {
+                return false
+            }
+
+            for (line in lines) {
+                if (line.contains("Any") && !line.contains("(): Any")) {
+                    return false
+                }
+                if (line.contains("private fun")) {
+                    return false
+                }
+                if (line.contains("abstract fun") && text.contains("abstract class") && !line.contains("protected abstract fun")) {
+                    return false
+                }
+                if (line.contains("fun") && !line.contains("override") && !text.contains("interface") && !line.contains(
+                        "protected"
+                    ) && !line.contains("abstract class")
+                ) {
+                    return false
+                }
+                if (line.contains("fun") && !line.contains("override") && !text.contains("interface") && !text.contains("abstract class")) {
+                    return false
+                }
+                if (line.contains("=") && text.contains("interface")) {
+                    return false
+                }
+            }
+
+            return true
+        }
+    }
 }
