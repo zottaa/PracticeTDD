@@ -22,11 +22,22 @@ class LoginViewModelTest {
         validatePassword = FakeValidatePassword.Base()
         interactor = FakeLoginInteractor.Base()
         runAsync = FakeRunAsync.Base()
+        val last: ValidationChain =
+            ValidationChain.Process(interactor = interactor, uiUpdate = uiUpdate)
+        val password: ValidationChain =
+            ValidationChain.Password(
+                validationText = validatePassword,
+                uiUpdate = uiUpdate,
+                next = last
+            )
+        val validationChain: ValidationChain =
+            ValidationChain.Login(
+                validationText = validateLogin,
+                uiUpdate = uiUpdate,
+                next = password
+            )
         viewModel = LoginViewModel(
-            uiUpdate = uiUpdate,
-            validateLogin = validateLogin,
-            validatePassword = validatePassword,
-            interactor = interactor,
+            validationChain,
             runAsync = runAsync
         )
     }
@@ -35,7 +46,7 @@ class LoginViewModelTest {
     fun `incorrect login`() {
         validateLogin.expectIncorrect()
 
-        viewModel.login(login = "testLogin", password = "testPassword")
+        viewModel.login(email = "testLogin", password = "testPassword")
 
         validateLogin.checkCalledWith(userInput = "testLogin")
         validatePassword.checkCalledTimes(times = 0)
@@ -48,7 +59,7 @@ class LoginViewModelTest {
         validateLogin.expectCorrect()
         validatePassword.expectIncorrect()
 
-        viewModel.login(login = "testLogin", password = "testPassword")
+        viewModel.login(email = "testLogin", password = "testPassword")
 
         validateLogin.checkCalledWith(userInput = "testLogin")
         validatePassword.checkCalledWith(userInput = "testPassword")
@@ -62,7 +73,7 @@ class LoginViewModelTest {
         validatePassword.expectCorrect()
         interactor.expectFailed()
 
-        viewModel.login(login = "testLogin", password = "testPassword")
+        viewModel.login(email = "testLogin", password = "testPassword")
 
         validateLogin.checkCalledWith(userInput = "testLogin")
         validatePassword.checkCalledWith(userInput = "testPassword")
@@ -80,7 +91,7 @@ class LoginViewModelTest {
         validatePassword.expectCorrect()
         interactor.expectSuccess()
 
-        viewModel.login(login = "testLogin", password = "testPassword")
+        viewModel.login(email = "testLogin", password = "testPassword")
 
         validateLogin.checkCalledWith(userInput = "testLogin")
         validatePassword.checkCalledWith(userInput = "testPassword")
@@ -111,7 +122,7 @@ private interface FakeLoginUpdate : LoginUpdate {
     }
 }
 
-private interface FakeValidateLogin : ValidateLogin {
+private interface FakeValidateLogin : ValidationText {
 
     fun expectIncorrect()
 
@@ -136,15 +147,16 @@ private interface FakeValidateLogin : ValidateLogin {
             assertEquals(userInput, actualLogin)
         }
 
-        override fun validate(input: String) {
-            actualLogin = input
+        override fun isValid(text: String, consumeErrorMessage: ConsumeErrorMessage): Boolean {
+            actualLogin = text
             if (returnException)
-                throw LoginInvalidException(message = "Incorrect login")
+                consumeErrorMessage.consume(errorMessage = "Incorrect login")
+            return !returnException
         }
     }
 }
 
-private interface FakeValidatePassword : ValidatePassword {
+private interface FakeValidatePassword : ValidationText {
 
     fun expectIncorrect()
 
@@ -175,11 +187,12 @@ private interface FakeValidatePassword : ValidatePassword {
             assertEquals(userInput, actualPassword)
         }
 
-        override fun validate(input: String) {
+        override fun isValid(text: String, consumeErrorMessage: ConsumeErrorMessage): Boolean {
             calledCount++
-            actualPassword = input
+            actualPassword = text
             if (returnException)
-                throw PasswordInvalidException(message = "Incorrect password")
+                consumeErrorMessage.consume(errorMessage = "Incorrect password")
+            return !returnException
         }
     }
 }

@@ -1,41 +1,22 @@
 package com.github.johnnysc.practicetdd
 
+import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 
 class LoginViewModel(
-    private val uiUpdate: LoginUpdate,
-    private val validateLogin: ValidateLogin,
-    private val validatePassword: ValidatePassword,
-    private val interactor: LoginInteractor,
+    private val validationChain: ValidationChain,
     private val runAsync: RunAsync
-) {
+) : HandleAsync, ViewModel() {
+    private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    fun login(login: String, password: String) {
-        try {
-            validateLogin.validate(login)
-        } catch (e: LoginInvalidException) {
-            return uiUpdate.update(LoginState.LoginError(e.message))
-        }
+    fun login(email: String, password: String) {
+        validationChain.validate(email, password, this)
+    }
 
-        try {
-            validatePassword.validate(password)
-        } catch (e: PasswordInvalidException) {
-            return uiUpdate.update(LoginState.PasswordError(e.message))
-        }
-
-        uiUpdate.update(LoginState.Loading)
-
-        runAsync.handleAsync(
-            CoroutineScope(SupervisorJob() + Dispatchers.IO),
-            {
-                interactor.login(login, password)
-            },
-            {
-                uiUpdate.update(it.loginState())
-            }
-        )
+    override fun <T : Any> handleAsync(backgroundBlock: suspend () -> T, uiBlock: (T) -> Unit) {
+        runAsync.handleAsync(viewModelScope, backgroundBlock, uiBlock)
     }
 }
+
